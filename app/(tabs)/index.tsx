@@ -1,98 +1,108 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useMemo } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { logout, session } = useAuth();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+  const fullName = useMemo(() => {
+    if (!session?.user) {
+      return "";
+    }
+
+    return `${session.user.nombre} ${session.user.apellido}`.trim();
+  }, [session?.user]);
+
+  const modules = [
+    "Vehiculos",
+    "Mantenimientos",
+    "Combustible",
+    "Estado de gomas",
+    "Gastos e ingresos",
+    "Foro comunitario",
+    "Videos educativos",
+    "Catalogo vehicular",
+  ];
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <ThemedView style={styles.headerCard}>
+        <ThemedText type="title">Autonix</ThemedText>
+        <ThemedText style={styles.subtitle}>Bienvenido, {fullName}</ThemedText>
+        <ThemedText style={styles.caption}>{session?.user.correo}</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+
+      <ThemedView style={styles.sectionCard}>
+        <ThemedText type="subtitle">Menu completo</ThemedText>
+        <View style={styles.grid}>
+          {modules.map((module) => (
+            <View key={module} style={styles.moduleChip}>
+              <ThemedText>{module}</ThemedText>
+            </View>
+          ))}
+        </View>
       </ThemedView>
-    </ParallaxScrollView>
+
+      <Pressable style={styles.logoutButton} onPress={logout}>
+        <ThemedText style={styles.logoutText}>Cerrar sesion</ThemedText>
+      </Pressable>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  headerCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#DFE5F0",
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  subtitle: {
+    fontSize: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  caption: {
+    fontSize: 13,
+    opacity: 0.7,
+  },
+  sectionCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#DFE5F0",
+    gap: 12,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  moduleChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#CBD6EA",
+    backgroundColor: "#F5F8FF",
+  },
+  logoutButton: {
+    marginTop: 6,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    backgroundColor: "#D62828",
+  },
+  logoutText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 });

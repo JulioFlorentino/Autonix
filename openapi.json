@@ -1,0 +1,1789 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Gestion de Vehiculos - ITLA",
+    "description": "API para la practica final de Aplicaciones Moviles. Solo usa metodos GET y POST.\n\n**Convencion POST:** Todos los datos JSON se envian dentro de un campo `datax` via form-encoded (`application/x-www-form-urlencoded` o `multipart/form-data`). Ejemplo: `datax={\"matricula\":\"20240096\",\"contrasena\":\"miClave123\"}`.\n\nPara endpoints que suben archivos, se usa `multipart/form-data` con el campo `datax` para el JSON y campos adicionales para los archivos.\n\n**Autenticacion (Bearer Token):** Los endpoints protegidos requieren enviar el token en el header `Authorization: Bearer TU_TOKEN`. El token se obtiene al activar la cuenta (`/auth/activar`) o al iniciar sesion (`/auth/login`). Debe guardarse en la app (SharedPreferences, localStorage, Ionic Storage) y enviarse en cada peticion protegida.\n\n**[Ver ejemplos de codigo en Flutter, React e Ionic](/api/swagger/ejemplos.html)**",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "/api", "description": "Servidor principal" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/auth/registro": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Registrar usuario",
+        "description": "Solo requiere la matricula. Retorna un token temporal para activar la cuenta.\n\n**datax:** `{\"matricula\":\"20240096\"}`",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con la matricula",
+                    "example": "{\"matricula\":\"20240096\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado, pendiente de activacion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "matricula": { "type": "string" },
+                        "nombre": { "type": "string" },
+                        "apellido": { "type": "string" },
+                        "correo": { "type": "string" },
+                        "token": { "type": "string", "description": "Token temporal para usar en /auth/activar" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Matricula es requerida" },
+          "404": { "description": "Matricula no encontrada" },
+          "409": { "description": "Cuenta ya activada" }
+        }
+      }
+    },
+    "/auth/activar": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Activar cuenta (establecer contrasena)",
+        "description": "No requiere autenticacion via header. El token temporal (obtenido en /auth/registro) se pasa dentro del JSON junto con la contrasena.\n\n**datax:** `{\"token\":\"eyJ...\",\"contrasena\":\"miClave123\"}`",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con token temporal y contrasena (minimo 6 caracteres)",
+                    "example": "{\"token\":\"eyJ...\",\"contrasena\":\"miClave123\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cuenta activada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "nombre": { "type": "string" },
+                        "apellido": { "type": "string" },
+                        "correo": { "type": "string" },
+                        "token": { "type": "string", "description": "Token definitivo" },
+                        "refreshToken": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Contrasena requerida o menor a 6 caracteres" },
+          "409": { "description": "Cuenta ya fue activada" }
+        }
+      }
+    },
+    "/auth/olvidar": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Olvidar contrasena",
+        "description": "Restablece la contrasena a una clave temporal. El usuario debe estar registrado y activo.\n\n**datax:** `{\"matricula\":\"20240096\"}`",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con la matricula",
+                    "example": "{\"matricula\":\"20240096\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Clave temporal asignada (123456)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "matricula": { "type": "string" },
+                        "nombre": { "type": "string" },
+                        "correo": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Usuario no registrado o no activado" },
+          "404": { "description": "Matricula no encontrada" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Iniciar sesion",
+        "description": "**datax:** `{\"matricula\":\"20240096\",\"contrasena\":\"miClave123\"}`",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con matricula y contrasena",
+                    "example": "{\"matricula\":\"20240096\",\"contrasena\":\"miClave123\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "nombre": { "type": "string" },
+                        "apellido": { "type": "string" },
+                        "correo": { "type": "string" },
+                        "fotoUrl": { "type": "string", "description": "URL de la foto de perfil o avatar por defecto" },
+                        "token": { "type": "string" },
+                        "refreshToken": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Credenciales incorrectas o cuenta no activada" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Refrescar token",
+        "description": "**datax:** `{\"refreshToken\":\"...\"}`",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"refreshToken\":\"eyJ...\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens renovados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": { "type": "string" },
+                        "refreshToken": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Refresh token invalido" }
+        }
+      }
+    },
+    "/auth/cambiar-clave": {
+      "post": {
+        "tags": ["Autenticacion"],
+        "summary": "Cambiar contrasena",
+        "description": "Permite al usuario autenticado cambiar su contrasena.\n\n**datax:** `{\"actual\":\"claveVieja\",\"nueva\":\"claveNueva123\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con la contrasena actual y la nueva (minimo 6 caracteres)",
+                    "example": "{\"actual\":\"miClaveVieja\",\"nueva\":\"miClaveNueva123\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contrasena actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Contrasena requerida o menor a 6 caracteres" },
+          "401": { "description": "Contrasena actual incorrecta" }
+        }
+      }
+    },
+    "/perfil": {
+      "get": {
+        "tags": ["Perfil"],
+        "summary": "Obtener perfil del usuario autenticado",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Datos del perfil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "matricula": { "type": "string" },
+                        "nombre": { "type": "string" },
+                        "apellido": { "type": "string" },
+                        "correo": { "type": "string" },
+                        "rol": { "type": "string" },
+                        "grupo": { "type": "string" },
+                        "fotoUrl": { "type": "string", "description": "URL de la foto de perfil o avatar por defecto" },
+                        "fechaRegistro": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/perfil/foto": {
+      "post": {
+        "tags": ["Perfil"],
+        "summary": "Cambiar foto de perfil",
+        "description": "Sube una imagen (max 20MB). Se optimiza automaticamente a max 100KB antes de guardar.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["foto"],
+                "properties": {
+                  "foto": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Foto de perfil actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "fotoUrl": { "type": "string", "description": "URL de la nueva foto" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "foto es requerida" }
+        }
+      }
+    },
+    "/vehiculos": {
+      "get": {
+        "tags": ["Vehiculos"],
+        "summary": "Listar vehiculos del usuario",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "marca", "in": "query", "schema": { "type": "string" } },
+          { "name": "modelo", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de vehiculos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "usuario_id": { "type": "integer" },
+                          "placa": { "type": "string" },
+                          "chasis": { "type": "string" },
+                          "marca": { "type": "string" },
+                          "modelo": { "type": "string" },
+                          "anio": { "type": "integer" },
+                          "cantidad_ruedas": { "type": "integer" },
+                          "foto_url": { "type": "string", "description": "URL proxied de la foto" },
+                          "fecha_registro": { "type": "string" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Vehiculos"],
+        "summary": "Registrar vehiculo",
+        "description": "**datax:** `{\"placa\":\"A123456\",\"chasis\":\"1HGCM82633A004352\",\"marca\":\"Toyota\",\"modelo\":\"Corolla\",\"anio\":2022,\"cantidadRuedas\":4}`\n\nOpcionalmente incluir campo `foto` como archivo.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con placa, chasis, marca, modelo, anio, cantidadRuedas",
+                    "example": "{\"placa\":\"A123456\",\"chasis\":\"1HGCM82633A004352\",\"marca\":\"Toyota\",\"modelo\":\"Corolla\",\"anio\":2022,\"cantidadRuedas\":4}"
+                  },
+                  "foto": { "type": "string", "format": "binary", "description": "Foto del vehiculo (opcional, max 20MB, se optimiza a 100KB)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Vehiculo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "placa": { "type": "string" },
+                        "chasis": { "type": "string" },
+                        "marca": { "type": "string" },
+                        "modelo": { "type": "string" },
+                        "anio": { "type": "integer" },
+                        "cantidadRuedas": { "type": "integer" },
+                        "fotoUrl": { "type": "string" },
+                        "fechaRegistro": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "Placa o chasis duplicado" }
+        }
+      }
+    },
+    "/vehiculos/detalle": {
+      "get": {
+        "tags": ["Vehiculos"],
+        "summary": "Detalle de vehiculo con resumen financiero",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del vehiculo con totales",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "placa": { "type": "string" },
+                        "chasis": { "type": "string" },
+                        "marca": { "type": "string" },
+                        "modelo": { "type": "string" },
+                        "anio": { "type": "integer" },
+                        "cantidadRuedas": { "type": "integer" },
+                        "fotoUrl": { "type": "string" },
+                        "fechaRegistro": { "type": "string" },
+                        "resumen": {
+                          "type": "object",
+                          "properties": {
+                            "totalMantenimientos": { "type": "number" },
+                            "totalCombustible": { "type": "number" },
+                            "totalGastos": { "type": "number" },
+                            "totalIngresos": { "type": "number" },
+                            "totalInvertido": { "type": "number" },
+                            "balance": { "type": "number" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Vehiculo no encontrado" }
+        }
+      }
+    },
+    "/vehiculos/editar": {
+      "post": {
+        "tags": ["Vehiculos"],
+        "summary": "Editar datos de un vehiculo",
+        "description": "Solo se envian los campos que se quieren cambiar. Placa y chasis se validan como unicos.\n\n**datax:** `{\"id\":1,\"marca\":\"Honda\",\"modelo\":\"Civic\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "description": "JSON con id (requerido) y campos a editar: placa, chasis, marca, modelo, anio",
+                    "example": "{\"id\":1,\"marca\":\"Honda\",\"modelo\":\"Civic\",\"anio\":2023}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vehiculo actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "placa": { "type": "string" },
+                        "chasis": { "type": "string" },
+                        "marca": { "type": "string" },
+                        "modelo": { "type": "string" },
+                        "anio": { "type": "integer" },
+                        "cantidadRuedas": { "type": "integer" },
+                        "fotoUrl": { "type": "string" },
+                        "fechaRegistro": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Vehiculo no encontrado" },
+          "409": { "description": "Placa o chasis duplicado" }
+        }
+      }
+    },
+    "/vehiculos/foto": {
+      "post": {
+        "tags": ["Vehiculos"],
+        "summary": "Subir foto del vehiculo",
+        "description": "Sube una imagen (max 20MB). Se optimiza automaticamente a max 100KB.\n\n**datax:** `{\"id\":1}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["datax", "foto"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"id\":1}"
+                  },
+                  "foto": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Foto actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "fotoUrl": { "type": "string", "description": "URL de la nueva foto" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Vehiculo no encontrado" }
+        }
+      }
+    },
+    "/mantenimientos": {
+      "get": {
+        "tags": ["Mantenimientos"],
+        "summary": "Listar mantenimientos de un vehiculo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "vehiculo_id", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "tipo", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de mantenimientos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "vehiculo_id": { "type": "integer" },
+                          "tipo": { "type": "string" },
+                          "costo": { "type": "number" },
+                          "piezas": { "type": "string", "nullable": true },
+                          "fecha": { "type": "string" },
+                          "fotos": { "type": "array", "items": { "type": "string" }, "description": "URLs de las fotos" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Mantenimientos"],
+        "summary": "Registrar mantenimiento",
+        "description": "**datax:** `{\"vehiculo_id\":1,\"tipo\":\"Cambio de aceite\",\"costo\":2500,\"piezas\":\"Filtro\",\"fecha\":\"2026-03-01\"}`\n\nOpcionalmente incluir `fotos[]` como archivos (max 5).",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"vehiculo_id\":1,\"tipo\":\"Cambio de aceite\",\"costo\":2500}"
+                  },
+                  "fotos[]": { "type": "array", "items": { "type": "string", "format": "binary" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mantenimiento registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculoId": { "type": "integer" },
+                        "tipo": { "type": "string" },
+                        "costo": { "type": "number" },
+                        "piezas": { "type": "string", "nullable": true },
+                        "fecha": { "type": "string" },
+                        "fotos": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mantenimientos/detalle": {
+      "get": {
+        "tags": ["Mantenimientos"],
+        "summary": "Detalle de un mantenimiento",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle con fotos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculo_id": { "type": "integer" },
+                        "tipo": { "type": "string" },
+                        "costo": { "type": "number" },
+                        "piezas": { "type": "string", "nullable": true },
+                        "fecha": { "type": "string" },
+                        "fotos": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Mantenimiento no encontrado" }
+        }
+      }
+    },
+    "/mantenimientos/fotos": {
+      "post": {
+        "tags": ["Mantenimientos"],
+        "summary": "Subir fotos a un mantenimiento",
+        "description": "**datax:** `{\"mantenimiento_id\":1}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"mantenimiento_id\":1}"
+                  },
+                  "fotos[]": { "type": "array", "items": { "type": "string", "format": "binary" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fotos agregadas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "fotos": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/combustibles": {
+      "get": {
+        "tags": ["Combustible y Aceite"],
+        "summary": "Listar registros de combustible/aceite",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "vehiculo_id", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "tipo", "in": "query", "schema": { "type": "string", "enum": ["combustible", "aceite"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de registros",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "vehiculo_id": { "type": "integer" },
+                          "tipo": { "type": "string" },
+                          "cantidad": { "type": "number" },
+                          "unidad": { "type": "string" },
+                          "monto": { "type": "number" },
+                          "fecha": { "type": "string" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Combustible y Aceite"],
+        "summary": "Registrar carga de combustible o aceite",
+        "description": "**datax:** `{\"vehiculo_id\":1,\"tipo\":\"combustible\",\"cantidad\":15.5,\"unidad\":\"galones\",\"monto\":3800}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"vehiculo_id\":1,\"tipo\":\"combustible\",\"cantidad\":15.5,\"unidad\":\"galones\",\"monto\":3800}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculoId": { "type": "integer" },
+                        "tipo": { "type": "string" },
+                        "cantidad": { "type": "number" },
+                        "unidad": { "type": "string" },
+                        "monto": { "type": "number" },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gomas": {
+      "get": {
+        "tags": ["Gomas"],
+        "summary": "Estado de las gomas del vehiculo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "vehiculo_id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado de gomas con pinchazos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "cantidadRuedas": { "type": "integer" },
+                        "gomas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "integer" },
+                              "vehiculo_id": { "type": "integer" },
+                              "posicion": { "type": "string" },
+                              "eje": { "type": "integer" },
+                              "estado": { "type": "string", "nullable": true, "enum": ["buena", "regular", "mala", "reemplazada", null] },
+                              "totalPinchazos": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gomas/actualizar": {
+      "post": {
+        "tags": ["Gomas"],
+        "summary": "Actualizar estado de una goma",
+        "description": "**datax:** `{\"goma_id\":1,\"estado\":\"regular\"}`\n\nEstados validos: buena, regular, mala, reemplazada",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"goma_id\":1,\"estado\":\"regular\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "posicion": { "type": "string" },
+                        "eje": { "type": "integer" },
+                        "estado": { "type": "string" },
+                        "totalPinchazos": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gomas/pinchazos": {
+      "post": {
+        "tags": ["Gomas"],
+        "summary": "Registrar pinchazo en una goma",
+        "description": "**datax:** `{\"goma_id\":1,\"descripcion\":\"Clavo en la banda\",\"fecha\":\"2026-03-20\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"goma_id\":1,\"descripcion\":\"Clavo en la banda\",\"fecha\":\"2026-03-20\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pinchazo registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "gomaId": { "type": "integer" },
+                        "descripcion": { "type": "string", "nullable": true },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gastos/categorias": {
+      "get": {
+        "tags": ["Gastos"],
+        "summary": "Listar categorias de gastos",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de categorias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "nombre": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gastos": {
+      "get": {
+        "tags": ["Gastos"],
+        "summary": "Listar gastos de un vehiculo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "vehiculo_id", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "categoria_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de gastos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "vehiculo_id": { "type": "integer" },
+                          "categoria_id": { "type": "integer" },
+                          "categoriaNombre": { "type": "string" },
+                          "monto": { "type": "number" },
+                          "descripcion": { "type": "string", "nullable": true },
+                          "fecha": { "type": "string" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Gastos"],
+        "summary": "Registrar gasto",
+        "description": "**datax:** `{\"vehiculo_id\":1,\"categoriaId\":1,\"monto\":15000,\"descripcion\":\"Seguro anual\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"vehiculo_id\":1,\"categoriaId\":1,\"monto\":15000,\"descripcion\":\"Seguro anual\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Gasto registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculoId": { "type": "integer" },
+                        "categoriaId": { "type": "integer" },
+                        "categoriaNombre": { "type": "string" },
+                        "monto": { "type": "number" },
+                        "descripcion": { "type": "string", "nullable": true },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingresos": {
+      "get": {
+        "tags": ["Ingresos"],
+        "summary": "Listar ingresos de un vehiculo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "vehiculo_id", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de ingresos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "vehiculo_id": { "type": "integer" },
+                          "monto": { "type": "number" },
+                          "concepto": { "type": "string" },
+                          "fecha": { "type": "string" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Ingresos"],
+        "summary": "Registrar ingreso/ganancia",
+        "description": "**datax:** `{\"vehiculo_id\":1,\"monto\":25000,\"concepto\":\"Servicio de transporte\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"vehiculo_id\":1,\"monto\":25000,\"concepto\":\"Servicio de transporte\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ingreso registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculoId": { "type": "integer" },
+                        "monto": { "type": "number" },
+                        "concepto": { "type": "string" },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/noticias": {
+      "get": {
+        "tags": ["Noticias"],
+        "summary": "Ultimas 10 noticias de vehiculos",
+        "description": "Retorna las ultimas 10 noticias relacionadas con vehiculos desde remolacha.net. Sin paginacion.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de noticias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "titulo": { "type": "string" },
+                          "resumen": { "type": "string" },
+                          "imagenUrl": { "type": "string" },
+                          "fecha": { "type": "string" },
+                          "fuente": { "type": "string", "example": "remolacha.net" },
+                          "link": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/noticias/detalle": {
+      "get": {
+        "tags": ["Noticias"],
+        "summary": "Detalle de una noticia",
+        "description": "Retorna el contenido completo de una noticia por su id de remolacha.net.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle de la noticia con contenido HTML",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "titulo": { "type": "string" },
+                        "resumen": { "type": "string" },
+                        "contenido": { "type": "string", "description": "HTML del articulo completo" },
+                        "imagenUrl": { "type": "string" },
+                        "fecha": { "type": "string" },
+                        "fuente": { "type": "string" },
+                        "link": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Noticia no encontrada" }
+        }
+      }
+    },
+    "/foro/crear": {
+      "post": {
+        "tags": ["Foro"],
+        "summary": "Crear tema en el foro",
+        "description": "Crea una consulta en el foro. El vehiculo debe tener foto.\n\n**datax:** `{\"vehiculo_id\":1,\"titulo\":\"Ruido en el motor\",\"descripcion\":\"Mi carro hace un ruido...\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"vehiculo_id\":1,\"titulo\":\"Ruido en el motor\",\"descripcion\":\"Mi carro hace un ruido extraño al acelerar\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tema creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "vehiculoId": { "type": "integer" },
+                        "vehiculo": { "type": "string", "description": "Marca Modelo Anio" },
+                        "vehiculoFoto": { "type": "string" },
+                        "titulo": { "type": "string" },
+                        "descripcion": { "type": "string" },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Campos faltantes o vehiculo sin foto" },
+          "404": { "description": "Vehiculo no encontrado" }
+        }
+      }
+    },
+    "/foro/temas": {
+      "get": {
+        "tags": ["Foro"],
+        "summary": "Ver temas abiertos del foro",
+        "description": "Lista todos los temas del foro con autor, vehiculo, foto y cantidad de respuestas.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de temas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "titulo": { "type": "string" },
+                          "descripcion": { "type": "string" },
+                          "fecha": { "type": "string" },
+                          "vehiculo": { "type": "string", "description": "Marca Modelo Anio" },
+                          "vehiculoFoto": { "type": "string" },
+                          "autor": { "type": "string", "description": "Nombre Apellido" },
+                          "totalRespuestas": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/foro/detalle": {
+      "get": {
+        "tags": ["Foro"],
+        "summary": "Detalle de un tema con sus respuestas",
+        "description": "Muestra el tema completo con todas las respuestas ordenadas por fecha.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tema con respuestas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "titulo": { "type": "string" },
+                        "descripcion": { "type": "string" },
+                        "fecha": { "type": "string" },
+                        "vehiculo": { "type": "string" },
+                        "vehiculoFoto": { "type": "string" },
+                        "autor": { "type": "string" },
+                        "respuestas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "integer" },
+                              "contenido": { "type": "string" },
+                              "fecha": { "type": "string" },
+                              "autor": { "type": "string" }
+                            }
+                          }
+                        },
+                        "totalRespuestas": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tema no encontrado" }
+        }
+      }
+    },
+    "/foro/responder": {
+      "post": {
+        "tags": ["Foro"],
+        "summary": "Responder a un tema del foro",
+        "description": "Publica una respuesta en un tema existente.\n\n**datax:** `{\"tema_id\":1,\"contenido\":\"Puede ser el alternador...\"}`",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["datax"],
+                "properties": {
+                  "datax": {
+                    "type": "string",
+                    "example": "{\"tema_id\":1,\"contenido\":\"Puede ser el alternador, revisa las correas\"}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Respuesta publicada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "temaId": { "type": "integer" },
+                        "contenido": { "type": "string" },
+                        "autor": { "type": "string" },
+                        "fecha": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tema no encontrado" }
+        }
+      }
+    },
+    "/foro/mis-temas": {
+      "get": {
+        "tags": ["Foro"],
+        "summary": "Mis consultas y su actividad",
+        "description": "Lista los temas creados por el usuario autenticado, con cantidad de respuestas y fecha de la ultima respuesta.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mis temas con actividad",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "titulo": { "type": "string" },
+                          "descripcion": { "type": "string" },
+                          "fecha": { "type": "string" },
+                          "vehiculo": { "type": "string" },
+                          "vehiculoFoto": { "type": "string" },
+                          "totalRespuestas": { "type": "integer" },
+                          "ultimaRespuesta": { "type": "string", "nullable": true, "description": "Fecha de la ultima respuesta" }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/videos": {
+      "get": {
+        "tags": ["Videos"],
+        "summary": "Videos de cuidado y mantenimiento vehicular",
+        "description": "Retorna 10 videos de YouTube sobre mantenimiento, cuidado y recomendaciones para vehiculos.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Lista de videos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "youtubeId": { "type": "string", "example": "25-HG471MIc" },
+                          "titulo": { "type": "string" },
+                          "descripcion": { "type": "string" },
+                          "categoria": { "type": "string" },
+                          "url": { "type": "string", "example": "https://www.youtube.com/watch?v=25-HG471MIc" },
+                          "thumbnail": { "type": "string", "example": "https://img.youtube.com/vi/25-HG471MIc/hqdefault.jpg" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalogo": {
+      "get": {
+        "tags": ["Catalogo"],
+        "summary": "Listar vehiculos del catalogo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "marca", "in": "query", "schema": { "type": "string" } },
+          { "name": "modelo", "in": "query", "schema": { "type": "string" } },
+          { "name": "anio", "in": "query", "schema": { "type": "integer" } },
+          { "name": "precioMin", "in": "query", "schema": { "type": "number" } },
+          { "name": "precioMax", "in": "query", "schema": { "type": "number" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista del catalogo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "marca": { "type": "string" },
+                          "modelo": { "type": "string" },
+                          "anio": { "type": "integer" },
+                          "precio": { "type": "number" },
+                          "descripcionCorta": { "type": "string" },
+                          "imagenUrl": { "type": "string", "nullable": true }
+                        }
+                      }
+                    },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalogo/detalle": {
+      "get": {
+        "tags": ["Catalogo"],
+        "summary": "Detalle de vehiculo del catalogo",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle con imagenes y especificaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "marca": { "type": "string" },
+                        "modelo": { "type": "string" },
+                        "anio": { "type": "integer" },
+                        "precio": { "type": "number" },
+                        "imagenes": { "type": "array", "items": { "type": "string" } },
+                        "descripcion": { "type": "string" },
+                        "especificaciones": { "type": "object", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Vehiculo no encontrado" }
+        }
+      }
+    },
+    "/imagen": {
+      "get": {
+        "tags": ["Imagenes"],
+        "summary": "Proxy de imagenes",
+        "description": "Sirve las imagenes almacenadas sin exponer el storage. Las URLs de imagenes retornadas por los otros endpoints ya apuntan aqui automaticamente.",
+        "parameters": [
+          { "name": "path", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Ruta de la imagen", "example": "vehiculos/abc123.jpg" }
+        ],
+        "responses": {
+          "200": { "description": "Imagen servida", "content": { "image/*": {} } },
+          "404": { "description": "Imagen no encontrada" }
+        }
+      }
+    }
+  }
+}

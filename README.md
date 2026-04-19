@@ -16,6 +16,17 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+3. Configure API base URL
+
+   Create a `.env` file in the project root with:
+
+   ```bash
+   EXPO_PUBLIC_API_BASE_URL=https://tu-api.com
+   ```
+
+   The login flow uses `POST /auth/login`, `POST /auth/olvidar`, and `POST /auth/refresh`.
+   All POST requests are sent as `application/x-www-form-urlencoded` with the JSON payload in `datax`.
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
