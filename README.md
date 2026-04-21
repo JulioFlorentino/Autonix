@@ -1,174 +1,153 @@
 # Autonix
 
-Autonix is a cross-platform mobile application built with React Native and Expo. It allows users to manage their vehicles, follow automotive news, browse a parts catalog, watch videos, and participate in a community forum — all from a single, unified interface.
+Autonix es una aplicacion movil multiplataforma desarrollada con React Native y Expo. Permite a los usuarios gestionar sus vehiculos, consultar noticias automotrices, explorar un catalogo de productos, ver videos y participar en un foro comunitario, todo desde una interfaz unificada.
 
 ---
 
-## Table of Contents
+## Tabla de Contenidos
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [API Integration](#api-integration)
-- [Authentication](#authentication)
-- [Scripts](#scripts)
-
----
-
-## Features
-
-- **Authentication** — Registration with activation code, login, and password recovery.
-- **Vehicle Management** — Register, view, edit, and upload photos for personal vehicles.
-- **News** — Browse automotive news articles with full detail view.
-- **Videos** — Access a curated library of automotive videos.
-- **Catalog** — Explore a parts and products catalog with detail pages.
-- **Forum** — Create topics, view threads, and post replies in a community forum.
-- **Profile** — View and update profile information including avatar photo.
+- [Funcionalidades](#funcionalidades)
+- [Tecnologias](#tecnologias)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Primeros Pasos](#primeros-pasos)
+- [Variables de Entorno](#variables-de-entorno)
+- [Integracion con la API](#integracion-con-la-api)
+- [Autenticacion](#autenticacion)
+- [Scripts Disponibles](#scripts-disponibles)
 
 ---
 
-## Tech Stack
+## Funcionalidades
 
-| Layer          | Technology                                                                  |
-| -------------- | --------------------------------------------------------------------------- |
-| Framework      | [Expo](https://expo.dev) ~54 / [React Native](https://reactnative.dev) 0.81 |
-| Navigation     | [Expo Router](https://expo.github.io/router) (file-based routing)           |
-| State / Auth   | React Context + AsyncStorage                                                |
-| Animations     | React Native Reanimated 4                                                   |
-| Icons          | Expo Vector Icons / Expo Symbols                                            |
-| Image Handling | Expo Image + Expo Image Picker                                              |
-| Language       | TypeScript                                                                  |
+- **Autenticacion** — Registro con codigo de activacion, inicio de sesion y recuperacion de contrasena.
+- **Gestion de Vehiculos** — Registro, consulta, edicion y carga de fotos de vehiculos personales.
+- **Noticias** — Listado de articulos automotrices con vista de detalle completa.
+- **Videos** — Acceso a una biblioteca de videos curada.
+- **Catalogo** — Exploracion de productos y repuestos con paginas de detalle.
+- **Foro** — Creacion de temas, lectura de hilos y publicacion de respuestas en la comunidad.
+- **Perfil** — Consulta y actualizacion de datos personales, incluida la foto de perfil.
 
 ---
 
-## Project Structure
+## Tecnologias
+
+| Capa              | Tecnologia                                                                   |
+| ----------------- | ---------------------------------------------------------------------------- |
+| Framework         | [Expo](https://expo.dev) ~54 / [React Native](https://reactnative.dev) 0.81  |
+| Navegacion        | [Expo Router](https://expo.github.io/router) (enrutamiento basado en archivos) |
+| Estado / Auth     | React Context + AsyncStorage                                                 |
+| Animaciones       | React Native Reanimated 4                                                    |
+| Iconos            | Expo Vector Icons / Expo Symbols                                             |
+| Manejo de Imagenes| Expo Image + Expo Image Picker                                               |
+| Lenguaje          | TypeScript                                                                   |
+
+---
+
+## Estructura del Proyecto
 
 ```
 app/
-  _layout.tsx             Root layout with AuthProvider and theme setup
-  login.tsx               Login screen
-  register.tsx            Registration and activation screen
-  acerca-de.tsx           About screen
-  noticias-detalle.tsx    News article detail screen
+  _layout.tsx             Layout raiz con AuthProvider y configuracion de tema
+  login.tsx               Pantalla de inicio de sesion
+  register.tsx            Pantalla de registro y activacion de cuenta
+  acerca-de.tsx           Pantalla "Acerca de"
+  noticias-detalle.tsx    Detalle de articulo de noticias
   (tabs)/
-    _layout.tsx           Tab bar layout (auth-guarded)
-    index.tsx             Home screen with quick-access modules
-    explore.tsx           News feed
-    videos.tsx            Video library
-    settings.tsx          Profile and settings
-    catalogo/             Parts catalog
-    foro/                 Community forum
-    vehiculos/            Vehicle management
+    _layout.tsx           Layout del tab bar (protegido por autenticacion)
+    index.tsx             Pantalla de inicio con accesos rapidos
+    explore.tsx           Feed de noticias
+    videos.tsx            Biblioteca de videos
+    settings.tsx          Perfil y configuracion
+    catalogo/             Modulo de catalogo
+    foro/                 Modulo del foro comunitario
+    vehiculos/            Modulo de gestion de vehiculos
 
-components/               Shared UI components (ThemedText, ThemedView, etc.)
+components/               Componentes de UI reutilizables (ThemedText, ThemedView, etc.)
 constants/
-  theme.ts                Color palette and design tokens
-hooks/                    Custom hooks (useColorScheme, useThemeColor)
+  theme.ts                Paleta de colores y tokens de diseno
+hooks/                    Hooks personalizados (useColorScheme, useThemeColor)
 providers/
-  auth-provider.tsx       Authentication context and session management
+  auth-provider.tsx       Contexto de autenticacion y gestion de sesion
 services/
-  api-client.ts           Typed API client with all endpoint definitions
+  api-client.ts           Cliente HTTP tipado con definicion de endpoints
 ```
 
 ---
 
-## Getting Started
+## Primeros Pasos
 
-**Prerequisites:** Node.js 18+ and npm.
+**Requisitos previos:** Node.js 18+ y npm.
 
-1. Install dependencies:
+1. Instalar dependencias:
 
    ```bash
    npm install
    ```
 
-2. Create a `.env` file in the project root (see [Environment Variables](#environment-variables)).
+2. Crear un archivo `.env` en la raiz del proyecto (ver [Variables de Entorno](#variables-de-entorno)).
 
-3. Start the development server:
+3. Iniciar el servidor de desarrollo:
 
    ```bash
    npx expo start
    ```
 
-   From the terminal output, open the app in an Android emulator, iOS simulator, or on a physical device via [Expo Go](https://expo.dev/go).
+   Desde la salida del terminal, abrir la aplicacion en un emulador Android, simulador iOS o en un dispositivo fisico mediante [Expo Go](https://expo.dev/go).
 
 ---
 
-## Environment Variables
+## Variables de Entorno
 
-Create a `.env` file at the project root. The only required variable is the API base URL. All endpoint paths have sensible defaults and can be overridden individually.
+Crear un archivo `.env` en la raiz del proyecto. La unica variable obligatoria es la URL base de la API. Los nombres de los endpoints tienen valores predeterminados y pueden sobrescribirse individualmente mediante variables de entorno con el prefijo `EXPO_PUBLIC_`.
 
 ```env
-# Required
-EXPO_PUBLIC_API_BASE_URL=https://your-api.com/api
-
-# Optional — override individual endpoint paths (defaults shown)
-EXPO_PUBLIC_AUTH_LOGIN_ENDPOINT=/auth/login
-EXPO_PUBLIC_AUTH_REGISTRO_ENDPOINT=/auth/registro
-EXPO_PUBLIC_AUTH_ACTIVAR_ENDPOINT=/auth/activar
-EXPO_PUBLIC_AUTH_OLVIDAR_ENDPOINT=/auth/olvidar
-EXPO_PUBLIC_AUTH_REFRESH_ENDPOINT=/auth/refresh
-EXPO_PUBLIC_PROFILE_ENDPOINT=/perfil
-EXPO_PUBLIC_PROFILE_PHOTO_ENDPOINT=/perfil/foto
-EXPO_PUBLIC_VEHICULOS_ENDPOINT=/vehiculos
-EXPO_PUBLIC_VEHICULOS_DETALLE_ENDPOINT=/vehiculos/detalle
-EXPO_PUBLIC_VEHICULOS_EDITAR_ENDPOINT=/vehiculos/editar
-EXPO_PUBLIC_VEHICULOS_FOTO_ENDPOINT=/vehiculos/foto
-EXPO_PUBLIC_FORO_CREAR_ENDPOINT=/foro/crear
-EXPO_PUBLIC_FORO_TEMAS_ENDPOINT=/foro/temas
-EXPO_PUBLIC_FORO_DETALLE_ENDPOINT=/foro/detalle
-EXPO_PUBLIC_FORO_RESPONDER_ENDPOINT=/foro/responder
-EXPO_PUBLIC_FORO_MIS_TEMAS_ENDPOINT=/foro/mis-temas
-EXPO_PUBLIC_NOTICIAS_ENDPOINT=/noticias
-EXPO_PUBLIC_NOTICIAS_DETALLE_ENDPOINT=/noticias/detalle
-EXPO_PUBLIC_VIDEOS_ENDPOINT=/videos
-EXPO_PUBLIC_CATALOGO_ENDPOINT=/catalogo
-EXPO_PUBLIC_CATALOGO_DETALLE_ENDPOINT=/catalogo/detalle
+# Obligatoria
+EXPO_PUBLIC_API_BASE_URL=https://tu-api.com/api
 ```
 
----
-
-## API Integration
-
-All HTTP requests go through `services/api-client.ts`, which exposes typed helpers:
-
-| Helper                                       | Purpose                                                                                            |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `getJson(endpoint, options)`                 | Authenticated GET request, returns unwrapped `data`                                                |
-| `postDatax(endpoint, payload, options)`      | POST with body serialized as `application/x-www-form-urlencoded`, JSON placed in the `datax` field |
-| `postMultipart(endpoint, formData, options)` | POST for file uploads (`multipart/form-data`)                                                      |
-
-All POST requests that send structured data encode the JSON payload inside a `datax` field as `application/x-www-form-urlencoded`. Authenticated requests attach a `Bearer` token via the `Authorization` header.
+No incluir credenciales, tokens ni URLs internas en este archivo si el repositorio es publico. Utilizar un servicio de gestion de secretos para entornos de produccion.
 
 ---
 
-## Authentication
+## Integracion con la API
 
-Session management is handled by `AuthProvider` (`providers/auth-provider.tsx`). The session is persisted in AsyncStorage under the key `autonix_auth_session`.
+Todas las solicitudes HTTP pasan por `services/api-client.ts`, que expone helpers tipados:
 
-| Method                                           | Description                                                        |
-| ------------------------------------------------ | ------------------------------------------------------------------ |
-| `login(matricula, contrasena)`                   | Authenticates the user and stores the session                      |
-| `register(matricula)`                            | Initiates registration and returns a temporary token               |
-| `activate(tokenTemporal, contrasena, matricula)` | Activates the account and starts a session                         |
-| `forgotPassword(matricula)`                      | Sends a password recovery request                                  |
-| `refreshAuthToken()`                             | Silently refreshes the access token using the stored refresh token |
-| `updateSessionUser(patch)`                       | Partially updates the cached user profile                          |
-| `logout()`                                       | Clears the session from memory and storage                         |
+| Helper                                       | Descripcion                                                                                              |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `getJson(endpoint, options)`                 | Solicitud GET autenticada; retorna el campo `data` del cuerpo de respuesta                               |
+| `postDatax(endpoint, payload, options)`      | Solicitud POST con cuerpo codificado como `application/x-www-form-urlencoded`, JSON dentro del campo `datax` |
+| `postMultipart(endpoint, formData, options)` | Solicitud POST para carga de archivos (`multipart/form-data`)                                            |
 
-The tab layout redirects unauthenticated users to `/login` automatically.
+Las solicitudes autenticadas incluyen un token `Bearer` en el encabezado `Authorization`.
 
 ---
 
-## Scripts
+## Autenticacion
 
-| Command                 | Description                                                |
-| ----------------------- | ---------------------------------------------------------- |
-| `npm start`             | Start the Expo development server                          |
-| `npm run android`       | Start on Android emulator                                  |
-| `npm run ios`           | Start on iOS simulator                                     |
-| `npm run web`           | Start in a web browser                                     |
-| `npm run lint`          | Run ESLint across the project                              |
-| `npm run reset-project` | Archive starter code and reset to a blank `app/` directory |
+La sesion es gestionada por `AuthProvider` en `providers/auth-provider.tsx`. La sesion se persiste de forma local en el dispositivo mediante AsyncStorage.
+
+| Metodo                                           | Descripcion                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------- |
+| `login(matricula, contrasena)`                   | Autentica al usuario y almacena la sesion                             |
+| `register(matricula)`                            | Inicia el registro y retorna un token temporal                        |
+| `activate(tokenTemporal, contrasena, matricula)` | Activa la cuenta e inicia sesion                                      |
+| `forgotPassword(matricula)`                      | Envia una solicitud de recuperacion de contrasena                     |
+| `refreshAuthToken()`                             | Renueva silenciosamente el token de acceso con el token de refresco   |
+| `updateSessionUser(patch)`                       | Actualiza parcialmente el perfil de usuario en cache                  |
+| `logout()`                                       | Elimina la sesion de memoria y almacenamiento local                   |
+
+El layout de pestanas redirige automaticamente a `/login` si no hay sesion activa.
+
+---
+
+## Scripts Disponibles
+
+| Comando                 | Descripcion                                                          |
+| ----------------------- | -------------------------------------------------------------------- |
+| `npm start`             | Inicia el servidor de desarrollo de Expo                             |
+| `npm run android`       | Inicia la app en emulador Android                                    |
+| `npm run ios`           | Inicia la app en simulador iOS                                       |
+| `npm run web`           | Inicia la app en el navegador                                        |
+| `npm run lint`          | Ejecuta ESLint en todo el proyecto                                   |
+| `npm run reset-project` | Archiva el codigo inicial y reinicia el directorio `app/` desde cero |
