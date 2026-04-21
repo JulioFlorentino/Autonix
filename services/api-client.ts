@@ -31,6 +31,54 @@ export const API_ENDPOINTS = {
   authRefresh: normalizeEndpoint(
     process.env.EXPO_PUBLIC_AUTH_REFRESH_ENDPOINT ?? "/auth/refresh",
   ),
+  profile: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_PROFILE_ENDPOINT ?? "/perfil",
+  ),
+  profilePhoto: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_PROFILE_PHOTO_ENDPOINT ?? "/perfil/foto",
+  ),
+  vehiculos: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_VEHICULOS_ENDPOINT ?? "/vehiculos",
+  ),
+  vehiculosDetalle: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_VEHICULOS_DETALLE_ENDPOINT ?? "/vehiculos/detalle",
+  ),
+  vehiculosEditar: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_VEHICULOS_EDITAR_ENDPOINT ?? "/vehiculos/editar",
+  ),
+  vehiculosFoto: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_VEHICULOS_FOTO_ENDPOINT ?? "/vehiculos/foto",
+  ),
+  foroCrear: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_FORO_CREAR_ENDPOINT ?? "/foro/crear",
+  ),
+  foroTemas: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_FORO_TEMAS_ENDPOINT ?? "/foro/temas",
+  ),
+  foroDetalle: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_FORO_DETALLE_ENDPOINT ?? "/foro/detalle",
+  ),
+  foroResponder: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_FORO_RESPONDER_ENDPOINT ?? "/foro/responder",
+  ),
+  foroMisTemas: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_FORO_MIS_TEMAS_ENDPOINT ?? "/foro/mis-temas",
+  ),
+  noticias: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_NOTICIAS_ENDPOINT ?? "/noticias",
+  ),
+  noticiasDetalle: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_NOTICIAS_DETALLE_ENDPOINT ?? "/noticias/detalle",
+  ),
+  videos: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_VIDEOS_ENDPOINT ?? "/videos",
+  ),
+  catalogo: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_CATALOGO_ENDPOINT ?? "/catalogo",
+  ),
+  catalogoDetalle: normalizeEndpoint(
+    process.env.EXPO_PUBLIC_CATALOGO_DETALLE_ENDPOINT ?? "/catalogo/detalle",
+  ),
 };
 
 function getApiBaseUrl(): string {
@@ -46,6 +94,16 @@ function getApiBaseUrl(): string {
 function createHeaders(token?: string): Headers {
   const headers = new Headers();
   headers.set("Content-Type", "application/x-www-form-urlencoded");
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  return headers;
+}
+
+function createAuthHeaders(token?: string): Headers {
+  const headers = new Headers();
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -94,6 +152,46 @@ export async function postDatax<T>(
     method: "POST",
     headers: createHeaders(options?.token),
     body: body.toString(),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractError(response));
+  }
+
+  const raw = (await response.json()) as unknown;
+  return unwrapPayload<T>(raw);
+}
+
+export async function getJson<T>(
+  endpoint: string,
+  options?: RequestOptions,
+): Promise<T> {
+  const baseUrl = getApiBaseUrl();
+
+  const response = await fetch(`${baseUrl}${endpoint}`, {
+    method: "GET",
+    headers: createAuthHeaders(options?.token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractError(response));
+  }
+
+  const raw = (await response.json()) as unknown;
+  return unwrapPayload<T>(raw);
+}
+
+export async function postMultipart<T>(
+  endpoint: string,
+  formData: FormData,
+  options?: RequestOptions,
+): Promise<T> {
+  const baseUrl = getApiBaseUrl();
+
+  const response = await fetch(`${baseUrl}${endpoint}`, {
+    method: "POST",
+    headers: createAuthHeaders(options?.token),
+    body: formData,
   });
 
   if (!response.ok) {

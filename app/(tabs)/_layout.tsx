@@ -1,12 +1,53 @@
 import { Redirect, Tabs } from "expo-router";
-import React from "react";
-import { ActivityIndicator, Image, StyleSheet, View } from "react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/providers/auth-provider";
+
+const API_ORIGIN =
+  process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/api\/?$/, "") ??
+  "https://taller-itla.ia3x.com";
+
+function resolveImageUrl(rawUrl: string | undefined): string | undefined {
+  if (!rawUrl) {
+    return undefined;
+  }
+
+  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+    return rawUrl;
+  }
+
+  return `${API_ORIGIN}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
+}
+
+function HeaderAvatar({ fotoUrl }: { fotoUrl?: string }) {
+  const [failed, setFailed] = useState(false);
+  const resolved = resolveImageUrl(fotoUrl);
+
+  return (
+    <View style={styles.avatarContainer}>
+      {resolved && !failed ? (
+        <Image
+          source={{ uri: resolved }}
+          style={styles.avatarImage}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <View style={styles.avatarFallback} />
+      )}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,22 +71,41 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: true,
-        headerTitle: "",
-        headerRight: () => (
-          <View style={styles.avatarContainer}>
-            {session.user.fotoUrl ? (
-              <Image
-                source={{ uri: session.user.fotoUrl }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <View style={styles.avatarFallback} />
-            )}
-          </View>
-        ),
+        tabBarActiveTintColor: "#FF7A1A",
+        tabBarInactiveTintColor: "#8A8A8A",
+        headerShown: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {
+          position: "absolute",
+          bottom: Platform.OS === "web" ? 16 : 24,
+          left: 24,
+          right: 24,
+          height: 72,
+          borderRadius: 36,
+          backgroundColor: "#141414",
+          borderTopWidth: 1,
+          borderTopColor: "#1E3A5F",
+          borderLeftWidth: 1,
+          borderLeftColor: "#1E3A5F",
+          borderRightWidth: 1,
+          borderRightColor: "#1E3A5F",
+          borderBottomWidth: 1,
+          borderBottomColor: "#1E3A5F",
+          elevation: 12,
+          shadowColor: "#FF7A1A",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.18,
+          shadowRadius: 12,
+          paddingBottom: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 9,
+          fontWeight: "600",
+        },
+        tabBarItemStyle: {
+          paddingTop: 6,
+          paddingBottom: 6,
+        },
       }}
     >
       <Tabs.Screen
@@ -53,7 +113,31 @@ export default function TabLayout() {
         options={{
           title: "Menu",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol size={24} name="house.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="vehiculos"
+        options={{
+          title: "Vehiculos",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={24} name="car.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="foro"
+        options={{
+          title: "Foro",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={24}
+              name="bubble.left.and.bubble.right.fill"
+              color={color}
+            />
           ),
         }}
       />
@@ -62,7 +146,16 @@ export default function TabLayout() {
         options={{
           title: "Noticias",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={24} name="paperplane.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="videos"
+        options={{
+          title: "Videos",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={24} name="play.rectangle.fill" color={color} />
           ),
         }}
       />
@@ -71,10 +164,11 @@ export default function TabLayout() {
         options={{
           title: "Ajustes",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="gearshape.fill" color={color} />
+            <IconSymbol size={24} name="gearshape.fill" color={color} />
           ),
         }}
       />
+      <Tabs.Screen name="catalogo" options={{ href: null }} />
     </Tabs>
   );
 }
@@ -97,6 +191,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#D6D7DB",
+    backgroundColor: "#1E3A5F",
   },
 });

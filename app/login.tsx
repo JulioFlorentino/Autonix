@@ -128,7 +128,7 @@ export default function LoginScreen() {
           disabled={submitting || recovering}
         >
           {recovering ? (
-            <ActivityIndicator color="#1A2C79" />
+            <ActivityIndicator color="#FF7A1A" />
           ) : (
             <ThemedText style={styles.linkButtonText}>
               Olvide mi contrasena
@@ -153,15 +153,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 20,
-    backgroundColor: "#F1F5FC",
+    backgroundColor: "#0D0D0D",
   },
   card: {
     gap: 14,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#DCE5F4",
-    backgroundColor: "#FFFFFF",
+    borderColor: "#1E3A5F",
+    backgroundColor: "#141414",
   },
   subtitle: {
     fontSize: 14,
@@ -178,16 +178,16 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#C9D7ED",
-    backgroundColor: "#F8FAFF",
+    borderColor: "#1E3A5F",
+    backgroundColor: "#1A1A1A",
     paddingHorizontal: 14,
-    color: "#0F172A",
+    color: "#F5F5F5",
   },
   primaryButton: {
     marginTop: 4,
     height: 48,
     borderRadius: 10,
-    backgroundColor: "#1F3B9D",
+    backgroundColor: "#FF7A1A",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -202,16 +202,16 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#BBC9E5",
+    borderColor: "#1E3A5F",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#EAF0FF",
+    backgroundColor: "#0F2030",
   },
   linkButtonDisabled: {
     opacity: 0.7,
   },
   linkButtonText: {
-    color: "#1A2C79",
+    color: "#FF7A1A",
     fontWeight: "700",
   },
   registerLink: {
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   registerLinkText: {
-    color: "#1A2C79",
+    color: "#FF7A1A",
     fontWeight: "700",
   },
 });

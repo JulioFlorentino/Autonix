@@ -1,0 +1,65 @@
+{
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://taller-itla.ia3x.com/api/",
+        "EXPO_PUBLIC_AUTH_LOGIN_ENDPOINT": "/auth/login",
+        "EXPO_PUBLIC_AUTH_REGISTRO_ENDPOINT": "/auth/registro",
+        "EXPO_PUBLIC_AUTH_ACTIVAR_ENDPOINT": "/auth/activar",
+        "EXPO_PUBLIC_AUTH_OLVIDAR_ENDPOINT": "/auth/olvidar",
+        "EXPO_PUBLIC_AUTH_REFRESH_ENDPOINT": "/auth/refresh",
+        "EXPO_PUBLIC_PROFILE_ENDPOINT": "/perfil",
+        "EXPO_PUBLIC_PROFILE_PHOTO_ENDPOINT": "/perfil/foto",
+        "EXPO_PUBLIC_CATALOGO_ENDPOINT": "/catalogo",
+        "EXPO_PUBLIC_CATALOGO_DETALLE_ENDPOINT": "/catalogo/detalle"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://taller-itla.ia3x.com/api/",
+        "EXPO_PUBLIC_AUTH_LOGIN_ENDPOINT": "/auth/login",
+        "EXPO_PUBLIC_AUTH_REGISTRO_ENDPOINT": "/auth/registro",
+        "EXPO_PUBLIC_AUTH_ACTIVAR_ENDPOINT": "/auth/activar",
+        "EXPO_PUBLIC_AUTH_OLVIDAR_ENDPOINT": "/auth/olvidar",
+        "EXPO_PUBLIC_AUTH_REFRESH_ENDPOINT": "/auth/refresh",
+        "EXPO_PUBLIC_PROFILE_ENDPOINT": "/perfil",
+        "EXPO_PUBLIC_PROFILE_PHOTO_ENDPOINT": "/perfil/foto",
+        "EXPO_PUBLIC_CATALOGO_ENDPOINT": "/catalogo",
+        "EXPO_PUBLIC_CATALOGO_DETALLE_ENDPOINT": "/catalogo/detalle"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://taller-itla.ia3x.com/api/",
+        "EXPO_PUBLIC_AUTH_LOGIN_ENDPOINT": "/auth/login",
+        "EXPO_PUBLIC_AUTH_REGISTRO_ENDPOINT": "/auth/registro",
+        "EXPO_PUBLIC_AUTH_ACTIVAR_ENDPOINT": "/auth/activar",
+        "EXPO_PUBLIC_AUTH_OLVIDAR_ENDPOINT": "/auth/olvidar",
+        "EXPO_PUBLIC_AUTH_REFRESH_ENDPOINT": "/auth/refresh",
+        "EXPO_PUBLIC_PROFILE_ENDPOINT": "/perfil",
+        "EXPO_PUBLIC_PROFILE_PHOTO_ENDPOINT": "/perfil/foto",
+        "EXPO_PUBLIC_CATALOGO_ENDPOINT": "/catalogo",
+        "EXPO_PUBLIC_CATALOGO_DETALLE_ENDPOINT": "/catalogo/detalle"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

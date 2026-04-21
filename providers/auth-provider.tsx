@@ -64,6 +64,7 @@ type AuthContextValue = {
   ) => Promise<void>;
   forgotPassword: (matricula: string) => Promise<string>;
   refreshAuthToken: () => Promise<void>;
+  updateSessionUser: (patch: Partial<AuthUser>) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -290,6 +291,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
         token: refreshResponse.token,
         refreshToken: refreshResponse.refreshToken,
+      };
+
+      setSession(updatedSession);
+      await persistSession(updatedSession);
+    },
+    updateSessionUser: async (patch) => {
+      if (!session) {
+        return;
+      }
+
+      const updatedSession: AuthSession = {
+        ...session,
+        user: {
+          ...session.user,
+          ...patch,
+        },
       };
 
       setSession(updatedSession);
